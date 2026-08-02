@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,6 +11,7 @@ public class SpawnDelayer : MonoBehaviour
     [Header("References")]
     [SerializeField] GameObject dangerIcon;
     [SerializeField] GameObject dangerArea;
+    bool isAlreadyPlayedIconAnim;
 
     [Header("Public")]
     public int _remainingCount;
@@ -49,8 +51,14 @@ public class SpawnDelayer : MonoBehaviour
         }
         else if (remainingCount == 1)
         {
-            dangerIcon.SetActive(false);
+            //dangerIcon.SetActive(false);
             dangerArea.SetActive(true);
+            if (!isAlreadyPlayedIconAnim)
+            {
+                //dangerIcon.transform.DOScale(1.1f, 0.25f).SetLoops(-1, LoopType.Yoyo);
+                isAlreadyPlayedIconAnim = true;
+            }
+                
         }
         else if (remainingCount == 0)
         {

@@ -40,7 +40,8 @@ public class ObstacleArea : MonoBehaviour
             if (collider.transform.CompareTag("Player")||
                 collider.transform.CompareTag("Car")||
                 collider.transform.CompareTag("BombBox") ||
-                collider.transform.CompareTag("Item") ||
+                collider.transform.CompareTag("ObstacleDangerArea") ||
+                collider.transform.CompareTag("ObstacleIcon") ||
                 collider.transform.GetComponent<Obstacle>() != null) 
 
             {

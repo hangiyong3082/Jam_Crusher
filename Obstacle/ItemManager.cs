@@ -1,21 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class ItemManager : Singleton<ItemManager>
 {
-    //item
-    [SerializeField] GameObject itemPrefab;
+    //item   
+    [ReadOnly]
     public int itemsOnRoadCount;
 
     //spawn probability
-    [SerializeField] float spawnProbability;
-    public int spawnCancleStrike = 0;
-    [SerializeField] int spawnCancleStrikeMax = 10;
+    [ReadOnly]
+    public int unspawnStrike = 0;
 
     //spawn
     int randomSpn = 0;
     Vector3[] spawnPosList = new Vector3[25];
+
+    [Header("References")]
+    [SerializeField] GameObject itemPrefab;
+    public float spawnProbability;
+    [SerializeField] int unspawnStrikeMax;
 
     //item count text
     [SerializeField] public GameObject bBitemCountText; //{ get; private set; }
@@ -39,22 +44,24 @@ public class ItemManager : Singleton<ItemManager>
         //
     }
 
-    public void SpawnItem()
+    public void SpawnItem(bool forcedSpawn = false)
     {
-        if (spawnCancleStrike >= spawnCancleStrikeMax)
+        if (forcedSpawn) Work();
+
+        if (unspawnStrike >= unspawnStrikeMax)
         {        
             Work();
-            spawnCancleStrike = 0;
+            unspawnStrike = 0;
 
         }
-        if (Random.Range(0f,1f) <= spawnProbability)
+        if (Random.Range(0f,100f) <= spawnProbability)
         {
             Work();
-            spawnCancleStrike = 0;
+            unspawnStrike = 0;
         }
         else
         {
-            spawnCancleStrike++;
+            unspawnStrike++;
         }
         
         void Work()
@@ -65,16 +72,16 @@ public class ItemManager : Singleton<ItemManager>
             if (AvailableTileSpnList.Instance.list.Count != 0 && itemsInGame < GameManager.Instance.maxbBItemCount)
             {
                 int playerPointNum = playerController.pointNum;
-                AvailableTileSpnList.Instance.ExcludeSpn(playerPointNum);
+                //AvailableTileSpnList.Instance.ExcludeSpn(playerPointNum);
 
                 randomSpn = AvailableTileSpnList.Instance.RandomSpn(); //랜덤 스폰 지점 
                 GameObject item = Instantiate(itemPrefab, spawnPosList[randomSpn], Quaternion.identity);
                 itemsOnRoadCount++;
 
                 item.GetComponent<Item>().spn = randomSpn;
-                AvailableTileSpnList.Instance.ExcludeSpn(randomSpn);
+                //AvailableTileSpnList.Instance.ExcludeSpn(randomSpn);
 
-                AvailableTileSpnList.Instance.ReturnSpn(playerPointNum);
+                //AvailableTileSpnList.Instance.ReturnSpn(playerPointNum);
             }
             //선택된 스폰 지점은 스폰가능 지점 리스트에서 삭제
             //플레이어가 있는 지점은 제외

@@ -88,8 +88,12 @@ public class Obstacle : MonoBehaviour
         }
         health -= damage;
 
-        DOTween.Kill(crashedAnimID,true);
-        transform.DOShakePosition(0.3f, strength: 0.2f, vibrato: 30).SetId(crashedAnimID);
+        if (!isPassableForCar)
+        {
+            DOTween.Kill(crashedAnimID, true);
+            transform.DOShakePosition(0.3f, strength: 0.2f, vibrato: 30).SetId(crashedAnimID);
+        }
+        
         DestroyAccToHealth();
     }
 
@@ -105,7 +109,7 @@ public class Obstacle : MonoBehaviour
 
     void DestroyAccToHealth() //AccTo : according to
     {
-        if (model.activeSelf == true && health == 0)
+        if (model.activeSelf == true && health <= 0)
         {
             DestroyObstacle();
         }

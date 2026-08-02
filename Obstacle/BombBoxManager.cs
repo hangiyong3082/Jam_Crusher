@@ -27,9 +27,9 @@ public class BombBoxManager : Singleton<BombBoxManager>
 
     void Awake()
     {
-        SpawnOA();
-
         gm = GameManager.Instance;
+        SpawnOA();
+        
         bombBoxItemButton = bombBoxButton.GetComponent<Button>();
         cameraAnimator = stateDrivenCamera.GetComponent<Animator>();
     }
@@ -47,7 +47,7 @@ public class BombBoxManager : Singleton<BombBoxManager>
         {
             PlaceBombBox();
         }
-        if (Input.GetKeyDown(KeyCode.Space) && bombBoxItemButton.interactable)
+        if (Input.GetKeyDown(KeyCode.Space) && bombBoxItemButton.interactable && gm.isPCControllAvailable)
         {
             TogglePlacementMode();
         }
@@ -74,7 +74,7 @@ public class BombBoxManager : Singleton<BombBoxManager>
         else //off
         {
             gm.placementMode = false;
-            bombBoxItemButton.interactable = GameManager.Instance.bombBoxItemCount > 0 ? true : false;
+            bombBoxItemButton.interactable = gm.bombBoxItemCount > 0 ? true : false;
             placementTimeBar.SetActive(false);
             itemCountGroup.SetActive(true);
             gm.isMoveable = true;
@@ -83,8 +83,9 @@ public class BombBoxManager : Singleton<BombBoxManager>
 
             cameraAnimator.Play("QuarterViewCamera");
         }
-        
+        #if DEBUG_SWIPE
         print($"S:{s2m.startPos} E:{s2m.endPos}");
+        #endif
         s2m.InitSwipe();
         //obstacle areas
         GameObject[] objs = GameObject.FindGameObjectsWithTag("ObstacleArea");
@@ -93,6 +94,17 @@ public class BombBoxManager : Singleton<BombBoxManager>
             ObstacleArea objScript = obj.GetComponent<ObstacleArea>();
             if (objScript.isOnPlaceMode == false) objScript.isOnPlaceMode = true;
             else objScript.isOnPlaceMode = false;
+        }
+
+        //tutorial
+        var tutorialManager = FindObjectOfType<TutorialManager>();
+        if (gm.isTutorial && tutorialManager.placedBox == false)
+        {
+            tutorialManager.GoNextStep();
+            if (tutorialManager.currentStep == Steps.bombItemMission)
+            {
+                ItemManager.Instance.SpawnItem(true);
+            }               
         }
     }
 
@@ -132,8 +144,13 @@ public class BombBoxManager : Singleton<BombBoxManager>
             ObstacleArea oAScript = hit.transform.GetComponent<ObstacleArea>();
             if (gm.placementMode && oAScript.isEnable)
             {
-                Instantiate(bombBoxPfb, hit.transform.position + Vector3.up, Quaternion.identity);
-                GameManager.Instance.bombBoxItemCount--;
+                BombBox bombBox = Instantiate(bombBoxPfb, hit.transform.position + Vector3.up, Quaternion.identity)
+                    .GetComponent<BombBox>();
+                //spn
+                bombBox.spn = AvailableTileSpnList.Instance.GetSpn(hit.transform.position);
+                AvailableTileSpnList.Instance.ExcludeSpn(bombBox.spn);
+                //count
+                gm.bombBoxItemCount--;
                 //anim
                 bBItemCountText.GetComponent<ItemCountAnimation>().UseItemAnim();
                 //audio
@@ -141,6 +158,8 @@ public class BombBoxManager : Singleton<BombBoxManager>
                 //setting
                 TogglePlacementMode();
                 SetUI();
+                //tutorial
+                FindObjectOfType<TutorialManager>().placedBox = true;
             }     
             
         }
@@ -166,7 +185,7 @@ public class BombBoxManager : Singleton<BombBoxManager>
     
     public void SetUI()
     {
-        bBItemCountText.GetComponent<TMP_Text>().text = $"x{gm.bombBoxItemCount}/{GameManager.Instance.maxbBItemCount}";
+        bBItemCountText.GetComponent<TMP_Text>().text = $"x{gm.bombBoxItemCount}/{gm.maxbBItemCount}";
 
         if (gm.bombBoxItemCount == 0) bombBoxItemButton.interactable = false;
         else bombBoxItemButton.interactable = true;

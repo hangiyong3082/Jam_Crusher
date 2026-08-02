@@ -8,7 +8,7 @@ public class CarSpawner : MonoBehaviour
     [SerializeField]
     GameObject carSpawnDelayerPrefab;
 
-    int spawnProbability = 70;
+    int spawnProbabilityInit = 100; //무조건 나오는 걸로 바꿈
 
     float spawnPosY = 1.5f;
     float middleToSideLength;
@@ -35,8 +35,13 @@ public class CarSpawner : MonoBehaviour
         StartSetting();
     }
 
-    public void SpawnCar()
+    ///<summary>
+    /// 값 넣을 시 스폰 확률 강제
+    ///</summary>
+    /// <param name="probability"></param>
+    public void SpawnCar(int probability = 0)
     {
+        int spawnProbability = probability != 0 ? probability : spawnProbabilityInit;
         if (Random.Range(1, 101) > spawnProbability) return;
         /*0 1 2 3 4 
         10         15

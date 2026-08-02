@@ -2,15 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CarSkinManager : Singleton<CarSkinManager>
+[CreateAssetMenu(fileName ="CarSkinManager",menuName = "CarSkin Manager")]
+public class CarSkinManager : ScriptableObject
 {
-    /// <summary>
-    /// Classic, 
-    /// </summary>
-    public string currentSkinType;
+    [SerializeField] public CarSkin[] carSkins;
 
-    private void Awake()
-    {
-        currentSkinType = "Classic";
-    }
+    
 }

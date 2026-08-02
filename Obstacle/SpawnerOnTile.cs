@@ -31,23 +31,24 @@ public class SpawnerOnTile : MonoBehaviour, ISpawner
         
     }
 
-    public void Spawn(int count = 1)
+    public void Spawn(int maxCountOnBoard = 1, bool forcedSpawn = false)
     {
         var playerController = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
 
-        // playerController.pointNum
-
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < 1; i++)
         {
-            if (GameObject.FindGameObjectsWithTag(prefabsTag).Length>= GameManager.Instance.spawnOnTileByScore[prefab.tag][0] ||
+            if (GameObject.FindGameObjectsWithTag(prefabsTag).Length>= maxCountOnBoard ||
                 AvailableTileSpnList.Instance.list.Count == 0)
             {
                 return;
             }
-            if (Random.Range(1, 101) > spawnProbability)
+            if (!forcedSpawn)
             {
-                continue;
-            }
+                if (Random.Range(1, 101) > spawnProbability)
+                {
+                    continue;
+                }
+            }       
             int randomPoint = AvailableTileSpnList.Instance.RandomSpn();
             var gameObject = Instantiate(prefab, CalculatePos(randomPoint), Quaternion.identity);
             gameObject.GetComponent<Obstacle>().pointNum = randomPoint;

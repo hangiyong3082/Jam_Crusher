@@ -21,7 +21,8 @@ public class Item : MonoBehaviour
 
     private void Start()
     {
-        //spawnParticle_i = Instantiate(spawnParticle, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+        if (spawnParticle != null)
+            spawnParticle_i = Instantiate(spawnParticle, transform.position + Vector3.up * 0.5f, Quaternion.identity);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -37,10 +38,15 @@ public class Item : MonoBehaviour
             BombBoxManager.Instance.SetUI();
             
             //effect
-            Instantiate(takenParticle, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+            if (takenParticle != null)
+                Instantiate(takenParticle, transform.position + Vector3.up * 0.5f, Quaternion.identity);
             //sfx
             MasterAudio.PlaySound3DAtTransform("BombBox_PickedUp", transform);
-            //spawnParticle_i.Stop();
+            if (spawnParticle_i  != null)
+                spawnParticle_i.Stop();
+
+            //tutorial
+            FindObjectOfType<TutorialManager>().BombItemMission();
             
             Destroy(gameObject);
         }

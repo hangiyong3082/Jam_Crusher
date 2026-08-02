@@ -4,7 +4,7 @@ using UnityEngine;
 
 interface ISpawner
 {
-    public void Spawn(int count);
+    public void Spawn(int count, bool forcedSpawn);
 }
     
     

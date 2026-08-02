@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -37,13 +38,16 @@ public class PlacementTimeBar : MonoBehaviour
             return;
         }
 
-        Vector2 barSize = mainBar.rectTransform.sizeDelta;
-        mainBar.rectTransform.sizeDelta
-            = new Vector2(barSize.x - (initBarSize.x * Time.deltaTime / initTime), barSize.y);
-
-        time -= Time.deltaTime;
-        if (time <= 0)
+        if (!GameManager.Instance.isTutorial || FindObjectOfType<TutorialManager>().placedBox)
         {
+            Vector2 barSize = mainBar.rectTransform.sizeDelta;
+            mainBar.rectTransform.sizeDelta
+            = new Vector2(barSize.x - (initBarSize.x * Time.deltaTime / initTime), barSize.y);
+        
+            time -= Time.deltaTime;
+        }     
+        if (time <= 0)
+        {           
             GameManager.Instance.bombBoxItemCount--;
             //anim
             bBItemCountText.GetComponent<ItemCountAnimation>().RemoveItemAnim();

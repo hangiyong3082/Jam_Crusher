@@ -8,5 +8,6 @@ public class CarSetup : MonoBehaviour
     [SerializeField] public GameObject damageEffect;
     [SerializeField] public GameObject bigdamageEffect;
     [SerializeField] public GameObject carSpawnDeathPreventerPfb;
+    [SerializeField] public GameObject carSpawnDeathPreventerWall;
 
 }

@@ -8,16 +8,20 @@ public class AvailableTileSpnList : Singleton<AvailableTileSpnList>
 
     bool initSetngCompleleted = false;
 
+    GameManager gameManager = null;
+
     private void Awake()
     {
+        gameManager = GameManager.Instance;
         InitialSetting();
+        
     }
     /// <summary>
     /// ¹«Á¶°Ç!!
     /// </summary>
     void InitialSetting()
     {
-        for (int i = 0; i < Mathf.Pow(GameManager.Instance.tileCount, 2); i++)
+        for (int i = 0; i < Mathf.Pow(gameManager.tileCount, 2); i++)
         {
             list.Add(i);
         }
@@ -32,11 +36,24 @@ public class AvailableTileSpnList : Singleton<AvailableTileSpnList>
         }
     }
 
+    public int GetSpn(Vector3 pos)
+    {
+        int result = 0;
+        int tileSize = gameManager.tileScale;
+        int tileCount = gameManager.tileCount;
+        float posZ = Mathf.Round(pos.z), posX = Mathf.Round(pos.x);
+        float minSpnPos = tileCount / 2 * tileSize * -1;
+
+        result = (int)((posZ / -2 + 2)*tileCount + (posX / 2 + 2));
+
+        return result;
+    }
+
     public void ResetSpn()
     {
         CheckInitSetng();
         list.Clear();
-        for (int i = 0; i < Mathf.Pow(GameManager.Instance.tileCount, 2); i++)
+        for (int i = 0; i < Mathf.Pow(gameManager.tileCount, 2); i++)
         {
             list.Add(i);
         }
@@ -68,7 +85,5 @@ public class AvailableTileSpnList : Singleton<AvailableTileSpnList>
     public int RandomSpn()
     {
         return list[Random.Range(0 ,list.Count)];
-    }
-
-    
+    } 
 }

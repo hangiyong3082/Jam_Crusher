@@ -22,6 +22,12 @@ public class Tree : Obstacle
         }
     }
 
+    public override void Reveal()
+    {
+        base.Reveal();
+        MasterAudio.PlaySound("Object_GrowTree");
+    }
+
     public override void Crashed(int damage = 1)
     {
         base.Crashed(damage);

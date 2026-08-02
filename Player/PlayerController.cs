@@ -23,27 +23,35 @@ public class PlayerController : MonoBehaviour
     [Header("References")]
     //particle
     [SerializeField] ParticleSystem gameoverParticle;
+    [SerializeField] ParticleSystem gameoverParticle2;
+    [SerializeField] ParticleSystem respawnParticle;
+    ParticleSystem existedGameoverParticle;
+    ParticleSystem existedRespawnParticle;
     public RemainingMoveCountText remainingMoveCountText_s;
+
+    GameManager gameManager = null;
 
 
     void Awake()
     {
+        gameManager = GameManager.Instance;
         jumpToMoveScript = GetComponent<JumpToMove>();
         rb = GetComponent<Rigidbody>();
         boxCollider = GetComponent<BoxCollider>();
         if (boxCollider.enabled == false) throw new System.Exception($"{nameof(PlayerController)} : collider ²¨Áü");
+        
     }
 
     private void Start()
     {
-        remainingMoveCount = GameManager.Instance.remainingMoveCountInit;
+        remainingMoveCount = gameManager.remainingMoveCountInit;
         GetCurrentPointNum();
     }
 
 
     void Update()
     {
-        if (GameManager.Instance.State != GameState.Playing)
+        if (gameManager.State != GameState.Playing)
         {
             return;
         }
@@ -59,7 +67,11 @@ public class PlayerController : MonoBehaviour
  
     public void MovePC()
     {
-        
+        if (!gameManager.isPCControllAvailable)
+        {
+            return;
+        }
+
         if (Input.GetKeyDown(KeyCode.W)||
             Input.GetKeyDown(KeyCode.S)||
             Input.GetKeyDown(KeyCode.A)||
@@ -87,7 +99,7 @@ public class PlayerController : MonoBehaviour
     {
         moveCancel = false;
         //limit movement
-        if (!GameManager.Instance.isMoveable || remainingMoveCount <= 0)
+        if (!gameManager.isMoveable || remainingMoveCount <= 0)
         {
             CancelMovement();
             //
@@ -99,13 +111,17 @@ public class PlayerController : MonoBehaviour
         }
         Boundary(h, v);
         BlockMove(h, v);
+        MoveAnim();
         //move
         if (!moveCancel)
         {
             GetNextPointNum();
             //move
             jumpToMoveScript.PlayerMove(h, v);
-            remainingMoveCount--;
+            if (remainingMoveCount != 99)
+            {
+                remainingMoveCount--;
+            }        
             MasterAudio.PlaySound3DAtTransform("Player_Move", transform);
         }
     }
@@ -130,7 +146,7 @@ public class PlayerController : MonoBehaviour
         }
         if (!detectTile)
         {
-            CancelMovement();
+            CancelMovement(false);
         }
     }
     void BlockMove(float h, float v)
@@ -141,15 +157,15 @@ public class PlayerController : MonoBehaviour
             if (hit.collider.CompareTag("BombBox") ||
                 hit.collider.GetComponent<Obstacle>() != null)
             {
-                CancelMovement();
+                CancelMovement(false);
                 if (hit.collider.GetComponent<Obstacle>() != null) hit.collider.GetComponent<Obstacle>().WhenCancelPlayerMove();
             }
         }
     }
-    void CancelMovement()
+    void CancelMovement(bool anim = true)
     {
         moveCancel = true;
-        remainingMoveCountText_s.CantMoveAnim();
+        if (anim) remainingMoveCountText_s.CantMoveAnim();
         //BlockedMoveEffect();
     }
     void BlockedMoveEffect()
@@ -160,8 +176,19 @@ public class PlayerController : MonoBehaviour
             transform.DOPunchPosition(new Vector3(0.2f, 0, 0), 0.3f, 30, 1).SetId("BlockedMoveEffect");
         }    
     }
+    void MoveAnim()
+    {
+        if (moveCancel) return;
 
-    private void OnTriggerEnter(Collider other)
+        if (DOTween.IsTweening("PlayerMoveAnim"))
+        {
+            DOTween.Kill("PlayerMoveAnim", true);
+        }
+        transform.DOPunchScale(new Vector3(0.2f, -0.2f, 0.2f), 0.3f, 1, 1).SetEase(Ease.InExpo).SetId("PlayerMoveAnim");
+
+    }
+
+    private void OnTriggerStay(Collider other)
     {
         if (other.CompareTag("Car") || other.GetComponent<Obstacle>() != null)
         {
@@ -170,11 +197,40 @@ public class PlayerController : MonoBehaviour
             MasterAudio.PlaySound3DAtTransform("Player_CrashWCar", transform);
         }
     }
-    void GameOver()
+    public void GameOver()
     {
-        Instantiate(gameoverParticle, transform.position+Vector3.up, Quaternion.identity);
-        gameObject.SetActive(false);
-        GameManager.Instance.GameOver();
+        //Áßº¹ ÀÌÆåÆ® Á¦°Å
+        if (existedRespawnParticle != null)
+        {
+            Destroy(existedRespawnParticle.gameObject);
+            Destroy(existedGameoverParticle.gameObject);
+            existedGameoverParticle = null;
+        }
+        if (existedGameoverParticle == null)
+        {
+            existedGameoverParticle = Instantiate(gameoverParticle, transform.position + Vector3.up, gameoverParticle.transform.rotation);
+
+        }
+        Instantiate(gameoverParticle2, transform.position + Vector3.up, gameoverParticle2.transform.rotation);
+
+        if (!gameManager.isTutorial)
+        {
+            gameObject.SetActive(false);
+            gameManager.GameOver();
+        }
+        else 
+        {
+            FindObjectOfType<TutorialManager>().PlayerDead(this);
+            jumpToMoveScript.isMoving = false;
+            //¸®½ºÆù ÆÄÆ¼Å¬
+            existedRespawnParticle =  Instantiate(respawnParticle, transform.position - Vector3.up/2, respawnParticle.transform.rotation);
+            Destroy(existedRespawnParticle.gameObject, 2f);
+        }
+    }
+
+    public void Respawn()
+    {
+        return;
     }
 
     void GetNextPointNum()
